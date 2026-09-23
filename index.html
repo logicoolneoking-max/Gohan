@@ -574,7 +574,12 @@
       if (isSwapped) swapYesNo();
       noAttemptCount = 0;
 
-      typeText(document.getElementById('q-text'), defaultText, 40);
+      // 選択画面に戻ったら一時的に「あきらめようね」を表示し、少し待って元のセリフに戻す
+      typeText(document.getElementById('q-text'), "あきらめようね", 40, () => {
+        setTimeout(() => {
+          typeText(document.getElementById('q-text'), defaultText, 40);
+        }, 1200);
+      });
     }
 
     function swapYesNo() {
@@ -630,14 +635,14 @@
           spawnMassiveParticles(20);
         }, 250);
       } else {
-        // 4回目以上のNo（エラー画面「あきらめようね」）
+        // 4回目以上のNo（エラー演出を表示してから復帰）
         setTimeout(() => {
           q.classList.add('hide');
           r.classList.add('show');
 
           document.getElementById('r-header').innerHTML = '<h1>SYSTEM ERROR</h1>';
-          typeText(document.getElementById('r-text'), "あきらめようね", 40, () => {
-            setTimeout(resetToChoices, 1600);
+          typeText(document.getElementById('r-text'), "エラーが発生しました。初期状態にリセットします...", 30, () => {
+            setTimeout(resetToChoices, 1500);
           });
         }, 250);
       }
