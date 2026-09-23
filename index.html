@@ -566,7 +566,8 @@
       document.getElementById('r-text').innerHTML = '★ SECRET CODE UNLOCKED ★<br>絶対いこうね！ <span class="heart">♥</span>';
     }
 
-    function resetToChoices() {
+    // 基本のリセット処理（Bボタンなどで実行）
+    function resetToChoices(isFromError = false) {
       r.classList.remove('show');
       q.classList.remove('hide');
       choices.forEach(b => b.classList.remove('dim', 'picked'));
@@ -574,12 +575,17 @@
       if (isSwapped) swapYesNo();
       noAttemptCount = 0;
 
-      // 選択画面に戻ったら一時的に「あきらめようね」を表示し、少し待って元のセリフに戻す
-      typeText(document.getElementById('q-text'), "あきらめようね", 40, () => {
-        setTimeout(() => {
-          typeText(document.getElementById('q-text'), defaultText, 40);
-        }, 1200);
-      });
+      if (isFromError) {
+        // エラーから戻った時だけ「あきらめようね」を表示したあと元のセリフに戻す
+        typeText(document.getElementById('q-text'), "あきらめようね", 40, () => {
+          setTimeout(() => {
+            typeText(document.getElementById('q-text'), defaultText, 40);
+          }, 1200);
+        });
+      } else {
+        // Bボタン等の手動リセット時は直接元のセリフに戻す
+        typeText(document.getElementById('q-text'), defaultText, 40);
+      }
     }
 
     function swapYesNo() {
@@ -635,14 +641,14 @@
           spawnMassiveParticles(20);
         }, 250);
       } else {
-        // 4回目以上のNo（エラー演出を表示してから復帰）
+        // 4回目以上のNo（エラー画面表示後に resetToChoices(true) を呼ぶ）
         setTimeout(() => {
           q.classList.add('hide');
           r.classList.add('show');
 
           document.getElementById('r-header').innerHTML = '<h1>SYSTEM ERROR</h1>';
           typeText(document.getElementById('r-text'), "エラーが発生しました。初期状態にリセットします...", 30, () => {
-            setTimeout(resetToChoices, 1500);
+            setTimeout(() => resetToChoices(true), 1500);
           });
         }, 250);
       }
@@ -673,7 +679,7 @@
       qElem.innerHTML = randomGlitch;
 
       setTimeout(() => {
-        resetToChoices();
+        resetToChoices(false); // Bボタンのリセットでは「あきらめようね」を出さない
       }, 200);
     }
 
