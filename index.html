@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>食事のお誘い</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sky-1: #0a0618;
+    --sky-2: #190e38;
+    --box-bg: #120a20;
+    --box-border: #f5f0e6;
+    --text-main: #f5f0e6;
+    --text-sub: #d0b9d8;
+    --accent: #ff77ff;
+
+    --body-bg: #18181a;
+    --body-border: #2c2c30;
+    --btn-color: #2b2b30;
+    --btn-shadow: #121214;
+  }
+
+  .mint-theme {
+    --box-bg: #091f1a;
+    --box-border: #80ffe8;
+    --text-main: #e0ffff;
+    --text-sub: #a0ebd9;
+    --accent: #00ffcc;
+  }
+
+  * {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+
+  html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #000000;
+    font-family: "DotGothic16", "Hiragino Kaku Gothic ProN", monospace;
+    padding: 10px;
+  }
+
+  .device-shell {
+    width: 100%;
+    max-width: 340px;
+    height: 520px; /* 全体の高さを固定 */
+    background: var(--body-bg);
+    border: 1px solid var(--body-border);
+    border-radius: 20px;
+    padding: 12px 14px 14px;
+    box-shadow: inset 0 1px 1px rgba(255,255,255,0.15), 0 10px 30px rgba(0,0,0,0.9);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+  }
+
+  .power-led {
+    position: absolute;
+    top: 12px;
+    left: 20px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #ff3366;
+    box-shadow: 0 0 6px #ff3366;
+    transition: background 0.2s, box-shadow 0.2s;
+  }
+  .power-led.flash {
+    background: #00ffcc;
+    box-shadow: 0 0 10px #00ffcc;
+  }
+
+  .screen-bezel {
+    width: 100%;
+    height: 330px; /* 液晶の表示領域を固定 */
+    background: #050505;
+    border-radius: 12px;
+    padding: 8px;
+    display: flex;
+    box-shadow: inset 0 0 8px rgba(0,0,0,0.9);
+    margin-top: 6px;
+  }
+
+  .screen {
+    width: 100%;
+    height: 100%;
+    background:
+      radial-gradient(circle at 50% 30%, rgba(255, 119, 255, 0.15), transparent 70%),
+      radial-gradient(circle at 20% 80%, rgba(0, 255, 204, 0.1), transparent 50%),
+      radial-gradient(circle, #ffffff 1px, transparent 1px) 0 0/16px 16px,
+      radial-gradient(circle, #ffe600 1px, transparent 1.5px) 8px 8px/32px 32px,
+      linear-gradient(180deg, var(--sky-1) 0%, var(--sky-2) 100%);
+    border-radius: 6px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 10px;
+  }
+
+  .screen::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background:
+      radial-gradient(circle, #ffffff 1.5px, transparent 1.5px) 12px 4px/24px 24px,
+      radial-gradient(circle, #ff77ff 1px, transparent 1px) 4px 18px/28px 28px;
+    opacity: 0.6;
+    animation: starTwinkle 2s infinite alternate ease-in-out;
+    pointer-events: none;
+  }
+
+  .shooting-star {
+    position: absolute;
+    top: -10px;
+    left: 80%;
+    width: 2px;
+    height: 2px;
+    background: #ffffff;
+    box-shadow: -2px -2px 0 #00ffcc, -4px -4px 0 rgba(255, 255, 255, 0.5);
+    opacity: 0;
+    animation: shoot 4s infinite ease-in;
+    z-index: 1;
+  }
+
+  @keyframes starTwinkle {
+    0% { opacity: 0.3; }
+    100% { opacity: 0.8; }
+  }
+
+  @keyframes shoot {
+    0% { transform: translate(0, 0); opacity: 0; }
+    10% { opacity: 1; }
+    30% { transform: translate(-120px, 120px); opacity: 0; }
+    100% { transform: translate(-120px, 120px); opacity: 0; }
+  }
+
+  .floating-icons {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 2;
+  }
+  .floating-item {
+    position: absolute;
+    width: 52px;
+    height: 52px;
+    animation: floatAround 5s ease-in-out infinite alternate;
+    transition: transform 0.4s ease;
+  }
+  .floating-item.spin {
+    transform: rotate(360deg) scale(1.3) !important;
+  }
+  .floating-item svg { width: 100%; height: 100%; }
+  .item-1 { top: 6%; left: 6%; }
+  .item-2 { top: 8%; right: 6%; animation-delay: -2.5s; }
+
+  @keyframes floatAround {
+    0% { transform: translateY(0px) rotate(-4deg); }
+    100% { transform: translateY(-8px) rotate(4deg); }
+  }
+
+  .title-screen {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 3;
+    transition: opacity 0.3s ease;
+  }
+  .title-screen.hide { display: none; }
+  .game-title {
+    font-size: 18px;
+    color: var(--text-main);
+    margin-bottom: 24px;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.9), 0 0 8px var(--accent);
+    letter-spacing: 1px;
+  }
+  .press-start {
+    font-size: 14px;
+    color: var(--accent);
+    animation: blink 0.8s infinite alternate;
+    text-shadow: 0 0 8px var(--accent);
+  }
+  @keyframes blink {
+    0% { opacity: 0.2; }
+    100% { opacity: 1; }
+  }
+
+  .falling-particle {
+    position: absolute;
+    top: -20px;
+    font-size: 18px;
+    font-weight: bold;
+    animation: fallDown 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    z-index: 4;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  }
+  @keyframes fallDown {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(300px) rotate(360deg); opacity: 0; }
+  }
+
+  .box {
+    width: 100%;
+    background: var(--box-bg);
+    border: 3px solid var(--box-border);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+    padding: 12px;
+    position: relative;
+    z-index: 3;
+    transition: background 0.3s, border-color 0.3s;
+    display: none;
+  }
+  .box.show { display: block; }
+  .box.shake { animation: boxShake 0.3s ease; }
+
+  @keyframes boxShake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-6px); }
+    40%, 80% { transform: translateX(6px); }
+  }
+
+  h1 {
+    margin: 0 0 6px;
+    font-size: 15px;
+    font-weight: 400;
+    color: var(--text-main);
+  }
+  .game-clear-banner {
+    color: #ffe600;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 6px;
+    animation: pulse 0.5s infinite alternate;
+    text-shadow: 0 0 6px #ffe600;
+  }
+  .line {
+    margin: 0 0 10px;
+    font-size: 13px;
+    color: var(--text-sub);
+    line-height: 1.4;
+    min-height: 2.2em;
+  }
+  .choices {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .choice {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 4px;
+    font-size: 13px;
+    color: var(--text-main);
+    border-radius: 4px;
+    transition: transform 0.15s ease;
+  }
+  .choice::before {
+    content: "";
+    width: 0; height: 0;
+    border-top: 4px solid transparent;
+    border-bottom: 4px solid transparent;
+    border-left: 6px solid var(--accent);
+    opacity: 0;
+  }
+  .choice.active::before, .choice.picked::before { opacity: 1; }
+  .choice.active { background: rgba(255, 255, 255, 0.1); }
+  .choice.picked { color: var(--accent); background: rgba(255, 119, 255, 0.15); }
+  .choice.dim { opacity: 0.3; }
+
+  .response { display: none; }
+  .response.show { display: block; animation: reveal 0.2s ease; }
+  .question.hide { display: none; }
+  .response .line { margin-bottom: 0; }
+  .heart { color: var(--accent); display: inline-block; animation: pulse 0.8s infinite alternate; }
+
+  @keyframes reveal { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes pulse { from { transform: scale(1.15); } to { transform: scale(1.3); } }
+
+  /* コントローラー領域の固定設定 */
+  .controls {
+    width: 100%;
+    height: 110px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 6px 0;
+    flex-shrink: 0;
+  }
+
+  .d-pad {
+    width: 86px;
+    height: 86px;
+    position: relative;
+  }
+  .d-pad::before {
+    content: "";
+    position: absolute;
+    top: 29px; left: 0; width: 86px; height: 28px;
+    background: var(--btn-color);
+    border-radius: 4px;
+    box-shadow: 0 4px 0 var(--btn-shadow);
+  }
+  .d-pad::after {
+    content: "";
+    position: absolute;
+    top: 0; left: 29px; width: 28px; height: 86px;
+    background: var(--btn-color);
+    border-radius: 4px;
+    box-shadow: 0 4px 0 var(--btn-shadow);
+  }
+  .d-btn {
+    position: absolute;
+    background: transparent;
+    border: none;
+    z-index: 5;
+    cursor: pointer;
+  }
+  .d-btn:active { background: rgba(255,255,255,0.15); }
+  .d-up { top: 0; left: 29px; width: 28px; height: 28px; border-radius: 4px 4px 0 0; }
+  .d-down { bottom: 0; left: 29px; width: 28px; height: 28px; border-radius: 0 0 4px 4px; }
+  .d-left { top: 29px; left: 0; width: 28px; height: 28px; border-radius: 4px 0 0 4px; }
+  .d-right { top: 29px; right: 0; width: 28px; height: 28px; border-radius: 0 4px 4px 0; }
+
+  .action-buttons {
+    width: 90px;
+    height: 90px;
+    position: relative;
+  }
+  .btn-round {
+    position: absolute;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--btn-color);
+    box-shadow: inset 0 1px 1px rgba(255,255,255,0.2), 0 3px 0 var(--btn-shadow);
+    border: none;
+    color: #999;
+    font-size: 10px;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+  }
+  .btn-round:active {
+    transform: translateY(2px);
+    box-shadow: inset 0 1px 1px rgba(255,255,255,0.2), 0 1px 0 var(--btn-shadow);
+  }
+  .btn-x { top: 0; left: 29px; }
+  .btn-y { top: 29px; left: 0; }
+  .btn-a { top: 29px; right: 0; color: var(--accent); }
+  .btn-b { bottom: 0; left: 29px; }
+
+  .system-buttons {
+    display: flex;
+    gap: 16px;
+    margin-top: 2px;
+    flex-shrink: 0;
+  }
+  .sys-btn {
+    width: 28px;
+    height: 6px;
+    background: var(--btn-color);
+    border-radius: 4px;
+    border: none;
+    box-shadow: 0 2px 0 var(--btn-shadow);
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+  <div class="device-shell">
+    <div class="power-led" id="led"></div>
+
+    <div class="screen-bezel">
+      <div class="screen" id="screen">
+        <div class="shooting-star"></div>
+
+        <div class="floating-icons">
+          <div class="floating-item item-1" id="icon-1">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M3 2h3v3H3zM18 2h3v3h-3zM2 5h5v3H2zM17 5h5v3h-5zM4 8h16v3H4zM3 11h18v2H3z" fill="#20132a"/>
+              <path d="M4 3h1v1H4zM19 3h1v1h-1z" fill="#ff77ff"/>
+              <path d="M5 12h14v7H5zM6 19h12v1H6z" fill="#f8f5ee"/>
+              <path d="M11 9h2v1h-2zM10 10h4v2h-4zM11 12h2v1h-2z" fill="#ff77ff"/>
+              <path d="M10.5 10.5h1v1h-1zM12.5 10.5h1v1h-1z" fill="#20132a"/>
+              <path d="M7 14h2v3H7zM15 14h2v3h-2z" fill="#20132a"/>
+              <path d="M7 14h1v1H7zM15 14h1v1h-1z" fill="#ffffff"/>
+              <path d="M11.5 16h1v1h-1z" fill="#ff77ff"/>
+              <path d="M4 19.5h16v1H4z" fill="#20132a"/>
+              <path d="M5 20.5h2v1.5H5zM11 20.5h2v1.5h-2zM17 20.5h2v1.5h-2z" fill="#20132a"/>
+            </svg>
+          </div>
+          <div class="floating-item item-2" id="icon-2">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M3 2h3v3H3zM18 2h3v3h-3zM2 5h5v3H2zM17 5h5v3h-5zM4 8h16v3H4zM3 11h18v2H3z" fill="#20132a"/>
+              <path d="M4 3h1v1H4zM19 3h1v1h-1z" fill="#ff77ff"/>
+              <path d="M5 12h14v7H5zM6 19h12v1H6z" fill="#f8f5ee"/>
+              <path d="M11 9h2v1h-2zM10 10h4v2h-4zM11 12h2v1h-2z" fill="#ff77ff"/>
+              <path d="M10.5 10.5h1v1h-1zM12.5 10.5h1v1h-1z" fill="#20132a"/>
+              <path d="M7 15h3v1H7zM8 14h1v2H8z" fill="#20132a"/>
+              <path d="M15 14h2v3H15z" fill="#20132a"/>
+              <path d="M15 14h1v1h-1z" fill="#ffffff"/>
+              <path d="M11.5 16h1v1h-1z" fill="#ff77ff"/>
+              <path d="M4 19.5h16v1H4z" fill="#20132a"/>
+              <path d="M5 20.5h2v1.5H5zM11 20.5h2v1.5h-2zM17 20.5h2v1.5h-2z" fill="#20132a"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- タイトル画面 -->
+        <div class="title-screen" id="title-screen">
+          <div class="game-title" id="game-title">ごはんのおさそい</div>
+          <div class="press-start">Press Start...</div>
+        </div>
+
+        <!-- メッセージボックス -->
+        <div class="box" id="msg-box">
+          <div class="question" id="question">
+            <h1 id="q-title">食事へのお誘い</h1>
+            <p class="line" id="q-text"></p>
+            <div class="choices" id="choices">
+              <div class="choice active" data-type="yes">はい</div>
+              <div class="choice" data-type="yes" id="choice-yes">YES</div>
+              <div class="choice" data-type="no" id="choice-no">No</div>
+            </div>
+          </div>
+          <div class="response" id="response">
+            <div id="r-header"></div>
+            <p class="line" id="r-text"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- コントローラー -->
+    <div class="controls">
+      <div class="d-pad">
+        <button class="d-btn d-up" id="btn-up"></button>
+        <button class="d-btn d-down" id="btn-down"></button>
+        <button class="d-btn d-left" id="btn-left"></button>
+        <button class="d-btn d-right" id="btn-right"></button>
+      </div>
+
+      <div class="action-buttons">
+        <button class="btn-round btn-x" id="btn-x">X</button>
+        <button class="btn-round btn-y" id="btn-y">Y</button>
+        <button class="btn-round btn-a" id="btn-a">A</button>
+        <button class="btn-round btn-b" id="btn-b">B</button>
+      </div>
+    </div>
+
+    <div class="system-buttons">
+      <button class="sys-btn" id="btn-select"></button>
+      <button class="sys-btn" id="btn-start"></button>
+    </div>
+  </div>
+
+  <script>
+    let typingTimer = null;
+    const qTextContent = "ごはんいっしょにいきたい！どう？";
+    const glitchChars = "%&$#@!*?♥★";
+    const itemsList = ['★', '♥', '✦', '♦', '★'];
+    const colorsList = ['#ff77ff', '#ffe600', '#00ffff', '#ff3366', '#ffffff'];
+
+    let isTitleScreen = true;
+    let titleUpCount = 0;
+    let noAttemptCount = 0;
+    let isSwapped = false;
+
+    let inputHistory = [];
+    const secretCode = ['up', 'up', 'down', 'down', 'a'];
+
+    const titleElem = document.getElementById('title-screen');
+    const boxElem = document.getElementById('msg-box');
+    const q = document.getElementById('question');
+    const r = document.getElementById('response');
+    const choicesContainer = document.getElementById('choices');
+    let choices = Array.from(document.querySelectorAll('.choice'));
+    let selectedIndex = 0;
+
+    function flashLed() {
+      const led = document.getElementById('led');
+      led.classList.add('flash');
+      setTimeout(() => led.classList.remove('flash'), 300);
+    }
+
+    function typeText(element, text, speed, callback) {
+      if (typingTimer) clearTimeout(typingTimer);
+      let i = 0;
+      element.innerHTML = "";
+      function typing() {
+        if (i < text.length) {
+          element.innerHTML += text.charAt(i);
+          i++;
+          typingTimer = setTimeout(typing, speed);
+        } else if (callback) {
+          callback();
+        }
+      }
+      typing();
+    }
+
+    function startGame() {
+      if (!isTitleScreen) return;
+      flashLed();
+      isTitleScreen = false;
+      titleElem.classList.add('hide');
+      boxElem.classList.add('show');
+      typeText(document.getElementById('q-text'), qTextContent, 50);
+    }
+
+    function updateSelection(index) {
+      if (isTitleScreen) return;
+      selectedIndex = (index + choices.length) % choices.length;
+      choices.forEach((btn, i) => {
+        btn.classList.toggle('active', i === selectedIndex);
+      });
+      registerInput(index < selectedIndex ? 'down' : 'up');
+    }
+
+    function registerInput(key) {
+      inputHistory.push(key);
+      if (inputHistory.length > secretCode.length) inputHistory.shift();
+      if (JSON.stringify(inputHistory) === JSON.stringify(secretCode)) {
+        triggerSecretCode();
+      }
+    }
+
+    function triggerSecretCode() {
+      if (isTitleScreen) startGame();
+      flashLed();
+      spawnMassiveParticles(25);
+      document.getElementById('r-header').innerHTML = '<h1>SECRET!</h1>';
+      q.classList.add('hide');
+      r.classList.add('show');
+      document.getElementById('r-text').innerHTML = '★ SECRET CODE UNLOCKED ★<br>絶対いこうね！ <span class="heart">♥</span>';
+    }
+
+    function resetToChoices() {
+      r.classList.remove('show');
+      q.classList.remove('hide');
+      choices.forEach(b => b.classList.remove('dim', 'picked'));
+
+      if (isSwapped) swapYesNo();
+      noAttemptCount = 0;
+
+      typeText(document.getElementById('q-text'), qTextContent, 40);
+    }
+
+    function swapYesNo() {
+      const yesElem = document.getElementById('choice-yes');
+      const noElem = document.getElementById('choice-no');
+
+      if (!isSwapped) {
+        choicesContainer.insertBefore(noElem, yesElem);
+        isSwapped = true;
+      } else {
+        choicesContainer.insertBefore(yesElem, noElem);
+        isSwapped = false;
+      }
+      choices = Array.from(document.querySelectorAll('.choice'));
+      updateSelection(selectedIndex);
+    }
+
+    function handleConfirm() {
+      flashLed();
+      if (isTitleScreen) {
+        startGame();
+        return;
+      }
+
+      registerInput('a');
+      if (q.classList.contains('hide')) return;
+
+      const btn = choices[selectedIndex];
+      const choiceType = btn.getAttribute('data-type');
+
+      if (choiceType === 'no' && noAttemptCount < 2) {
+        noAttemptCount++;
+        swapYesNo();
+
+        boxElem.classList.add('shake');
+        setTimeout(() => boxElem.classList.remove('shake'), 300);
+        return;
+      }
+
+      choices.forEach(b => b.classList.toggle('dim', b !== btn));
+      btn.classList.add('picked');
+
+      if (choiceType === 'yes') {
+        setTimeout(() => {
+          q.classList.add('hide');
+          r.classList.add('show');
+          document.getElementById('r-header').innerHTML = '<div class="game-clear-banner">!! GAME CLEAR !!</div>';
+          document.getElementById('r-text').innerHTML = 'やったね！<br>日程を決める旅はここから始まる！ <span class="heart">♪</span>';
+          spawnMassiveParticles(20);
+        }, 250);
+      } else {
+        setTimeout(() => {
+          q.classList.add('hide');
+          r.classList.add('show');
+
+          const isErrorPattern = Math.random() < 0.5;
+          if (isErrorPattern) {
+            document.getElementById('r-header').innerHTML = '<h1>SYSTEM ERROR</h1>';
+            typeText(document.getElementById('r-text'), "Error:404 Not Found", 40, () => {
+              setTimeout(resetToChoices, 1400);
+            });
+          } else {
+            document.getElementById('r-header').innerHTML = '<h1>あれれ？</h1>';
+            typeText(document.getElementById('r-text'), "間違えたのかな？画面を戻すね！", 40, () => {
+              setTimeout(resetToChoices, 1400);
+            });
+          }
+        }, 250);
+      }
+    }
+
+    function handleUpKey() {
+      if (isTitleScreen) {
+        titleUpCount++;
+        if (titleUpCount >= 3) {
+          document.getElementById('game-title').innerText = "超・ごはんのおさそい";
+          flashLed();
+        }
+      } else {
+        updateSelection(selectedIndex - 1);
+      }
+    }
+
+    function triggerGlitchReset() {
+      flashLed();
+      if (isTitleScreen) return;
+      registerInput('b');
+
+      const qElem = document.getElementById('q-text');
+      let randomGlitch = "";
+      for (let i = 0; i < 10; i++) {
+        randomGlitch += glitchChars.charAt(Math.floor(Math.random() * glitchChars.length));
+      }
+      qElem.innerHTML = randomGlitch;
+
+      setTimeout(() => {
+        resetToChoices();
+      }, 200);
+    }
+
+    function spawnMassiveParticles(count = 12) {
+      flashLed();
+      const screen = document.getElementById('screen');
+      for (let i = 0; i < count; i++) {
+        setTimeout(() => {
+          const p = document.createElement('div');
+          p.className = 'falling-particle';
+          p.innerText = itemsList[Math.floor(Math.random() * itemsList.length)];
+          p.style.color = colorsList[Math.floor(Math.random() * colorsList.length)];
+          p.style.left = (Math.random() * 88 + 6) + '%';
+          p.style.fontSize = (Math.random() * 10 + 14) + 'px';
+          screen.appendChild(p);
+          setTimeout(() => p.remove(), 1500);
+        }, i * 60);
+      }
+    }
+
+    function toggleTheme() {
+      flashLed();
+      document.getElementById('msg-box').classList.toggle('mint-theme');
+    }
+
+    function spinIcons() {
+      flashLed();
+      const i1 = document.getElementById('icon-1');
+      const i2 = document.getElementById('icon-2');
+      i1.classList.add('spin');
+      i2.classList.add('spin');
+      setTimeout(() => {
+        i1.classList.remove('spin');
+        i2.classList.remove('spin');
+      }, 500);
+    }
+
+    document.getElementById('btn-up').addEventListener('click', handleUpKey);
+    document.getElementById('btn-down').addEventListener('click', () => updateSelection(selectedIndex + 1));
+    document.getElementById('btn-left').addEventListener('click', () => registerInput('left'));
+    document.getElementById('btn-right').addEventListener('click', () => registerInput('right'));
+
+    document.getElementById('btn-a').addEventListener('click', handleConfirm);
+    document.getElementById('btn-b').addEventListener('click', triggerGlitchReset);
+    document.getElementById('btn-x').addEventListener('click', () => spawnMassiveParticles(12));
+    document.getElementById('btn-y').addEventListener('click', toggleTheme);
+    document.getElementById('btn-start').addEventListener('click', handleConfirm);
+    document.getElementById('btn-select').addEventListener('click', spinIcons);
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowUp') handleUpKey();
+      if (e.key === 'ArrowDown') updateSelection(selectedIndex + 1);
+      if (e.key === 'Enter' || e.key === 'a' || e.key === 'A') handleConfirm();
+      if (e.key === 'Escape' || e.key === 'b' || e.key === 'B') triggerGlitchReset();
+      if (e.key === 'x' || e.key === 'X') spawnMassiveParticles(12);
+      if (e.key === 'y' || e.key === 'Y') toggleTheme();
+    });
+  </script>
+</body>
+</html>
