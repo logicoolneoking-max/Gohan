@@ -481,7 +481,13 @@
 
   <script>
     let typingTimer = null;
-    const qTextContent = "ごはんいっしょにいきたい！どう？";
+    const defaultText = "ごはんいっしょにいきたい！どう？";
+    const noTexts = [
+      "まちがえたのかな？",
+      "おさせないよ！",
+      "おさせないってば"
+    ];
+
     const glitchChars = "%&$#@!*?♥★";
     const itemsList = ['★', '♥', '✦', '♦', '★'];
     const colorsList = ['#ff77ff', '#ffe600', '#00ffff', '#ff3366', '#ffffff'];
@@ -530,7 +536,7 @@
       isTitleScreen = false;
       titleElem.classList.add('hide');
       boxElem.classList.add('show');
-      typeText(document.getElementById('q-text'), qTextContent, 50);
+      typeText(document.getElementById('q-text'), defaultText, 50);
     }
 
     function updateSelection(index) {
@@ -568,7 +574,7 @@
       if (isSwapped) swapYesNo();
       noAttemptCount = 0;
 
-      typeText(document.getElementById('q-text'), qTextContent, 40);
+      typeText(document.getElementById('q-text'), defaultText, 40);
     }
 
     function swapYesNo() {
@@ -599,12 +605,16 @@
       const btn = choices[selectedIndex];
       const choiceType = btn.getAttribute('data-type');
 
-      if (choiceType === 'no' && noAttemptCount < 2) {
+      // Noを押した時の進行（3回目まではセリフを変えてシャッフル）
+      if (choiceType === 'no' && noAttemptCount < 3) {
+        const nextText = noTexts[noAttemptCount];
         noAttemptCount++;
         swapYesNo();
 
         boxElem.classList.add('shake');
         setTimeout(() => boxElem.classList.remove('shake'), 300);
+
+        typeText(document.getElementById('q-text'), nextText, 30);
         return;
       }
 
@@ -620,22 +630,15 @@
           spawnMassiveParticles(20);
         }, 250);
       } else {
+        // 4回目以上のNo（エラー画面「あきらめようね」）
         setTimeout(() => {
           q.classList.add('hide');
           r.classList.add('show');
 
-          const isErrorPattern = Math.random() < 0.5;
-          if (isErrorPattern) {
-            document.getElementById('r-header').innerHTML = '<h1>SYSTEM ERROR</h1>';
-            typeText(document.getElementById('r-text'), "Error:404 Not Found", 40, () => {
-              setTimeout(resetToChoices, 1400);
-            });
-          } else {
-            document.getElementById('r-header').innerHTML = '<h1>あれれ？</h1>';
-            typeText(document.getElementById('r-text'), "間違えたのかな？画面を戻すね！", 40, () => {
-              setTimeout(resetToChoices, 1400);
-            });
-          }
+          document.getElementById('r-header').innerHTML = '<h1>SYSTEM ERROR</h1>';
+          typeText(document.getElementById('r-text'), "あきらめようね", 40, () => {
+            setTimeout(resetToChoices, 1600);
+          });
         }, 250);
       }
     }
